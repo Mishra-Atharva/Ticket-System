@@ -1,5 +1,6 @@
 #include <iostream>
 #include <fstream>
+#include <vector>
 
 int genTicket()
 {
@@ -56,6 +57,8 @@ int purchase(std::string& email)
 
 int verification(int& ticket)
 {
+  bool create = false;
+  std::vector<std::string> lines;
   std::string ticket_number = std::to_string(ticket);
   std::string info;
   std::ifstream Myfile("customer.txt");
@@ -71,9 +74,25 @@ int verification(int& ticket)
         file << ticket << std::endl;
         file << info << std::endl;
         file.close();
-        Myfile.close();
-        return 0;
+        create = true;
       }
+      else
+      {
+        lines.push_back(info);
+      }
+    }
+    Myfile.close();
+    if (create)
+    {
+      remove("customer.txt");
+
+      std::ofstream Myfile("customer.txt");
+      for (size_t i = 0; i < lines.size(); i++)
+      {
+        Myfile << lines[i] << std::endl;
+      }
+      Myfile.close();
+      return 0;
     }
   }
 

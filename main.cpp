@@ -1,122 +1,97 @@
 #include <iostream>
 #include <fstream>
-#include <mutex>
 
-void purchase(std::string& fname, std::string& lname, std::string& dob, std::string& sex)
+int genTicket()
 {
-  std::mutex buy_mtx;
-  std::unique_lock<std::mutex> buy_lock(buy_mtx);
-  std::ofstream Myfile("purchase.txt");
-  Myfile << "START" << std::endl;
-  Myfile << fname << "\n" << lname << "\n" << dob << "\n" << sex << std::endl; 
-  Myfile << "END" << std::endl;
-  buy_lock.unlock();
-}
-
-std::string refund(std::string& fname, std::string& lname, std::string& dob, std::string& sex)
-{
-  std::mutex refund_mtx;
-  std::unique_lock<std::mutex> refund_lock(refund_mtx);
-  std::ifstream Myfile("purchase.txt");
-  std::string text;
-  std::string successful = "Refund was successful";
-  std::string unsuccessful = "Refund couldn't be processed!";
-  while(std::getline(Myfile, text))
+  int ticket_number = rand() % 999999 + 100000;
+  std::string tickets;
+  std::ifstream Myfile("tickets.txt");
+  if(Myfile)
   {
-    if(text == fname)
+    while(std::getline(Myfile, tickets))
     {
-      std::getline(Myfile, text);
-      if(text == lname)
+      while(std::to_string(ticket_number) == tickets)
       {
-        std::getline(Myfile, text);
-        if(text == dob)
-        {
-          std::getline(Myfile, text);
-          if(text == sex)
-          {
-            return successful;
-          }
-        }
+        ticket_number = rand() % 999999 + 100000;
       }
     }
   }
-  refund_lock.unlock();
-  return unsuccessful;
+  std::ofstream file("tickets.txt", std::ios_base::app);
+  file << ticket_number;
+  file.close();
+  return ticket_number;
 }
 
-void homepage()
+int purchase(std::string& email)
 {
-  std::cout << "+---------WELCOME--------+" << std::endl;
-  std::cout << "+                        +" << std::endl;
-  std::cout << "+  [1]. Buy Ticket       +" << std::endl;
-  std::cout << "+  [2]. Refund           +" << std::endl;
-  std::cout << "+  [3]. Log-off          +" << std::endl;
-  std::cout << "+                        +" << std::endl; 
-  std::cout << "+------------------------+" << std::endl;
+  int ticket_number = genTicket();
+  std::ofstream Myfile("customer.txt", std::ios_base::app);
+  Myfile << email << std::endl;
+  Myfile << ticket_number << std::endl;
+  Myfile.close();
+  return 0;
+}
+
+int verification(std::string& email)
+{
+  std::string ticket_number;
+  std::string info;
+  std::ifstream Myfile("customer.txt");
+  while(std::getline(Myfile, info))
+  {
+    if(info == email)
+    {
+      std::getline(Myfile, info);
+      ticket_number = info;
+      std::cout << "Email: " << email << "\nTicket #: " << ticket_number << std::endl;
+      Myfile.close();
+      return 0;
+    }
+  }
+  Myfile.close();
+  return 1;
 }
 
 int main()
 {
+  srand(static_cast<unsigned int>(time(NULL)));
   system("clear");
-  std::string fname;
-  std::string lname;
-  std::string dob;
-  std::string sex;
   int choice;
-
-  homepage();
-  std::cout << "\n Enter: ";
+  int result;
+  std::string email;
+  std::cout << "[1] Buy" << std::endl;
+  std::cout << "[2] Verify" << std::endl;
+  std::cout << "Select: ";
   std::cin >> choice;
-  
-  while(choice > 3 || choice < 1)
-  {
-    system("clear");
-    homepage();
-    std::cout << "\n Enter: ";
-    std::cin >> choice;
-  }
-
   switch(choice)
   {
     case 1:
+      std::cout << "Enter Email: ";
+      std::getline(std::cin >> std::ws, email);
       system("clear");
-      std::cout << "+----------ENTER DETAILS---------+" << std::endl;
-      std::cout << "+                                +" << std::endl;
-      std::cout << "    First Name: ";
-      std::getline(std::cin >> std::ws, fname);
-      std::cout << "    Last Name: ";
-      std::getline(std::cin >> std::ws, lname);
-      std::cout << "    DOB (dd/mm/yy): ";
-      std::getline(std::cin >> std::ws, dob);
-      std::cout << "    SEX (M/F): ";
-      std::cin >> sex;
-      std::cout << "+                                +" << std::endl;
-      std::cout << "+--------------------------------+" << std::endl;
-      purchase(fname, lname, dob, sex);
+      result = purchase(email);
+      if(result == 0)
+      {
+        std::cout << "Purchase was successful check email for ticket" << std::endl;
+      }
+      else 
+      {
+        std::cout << "[!] Error..!" << std::endl;
+      }
       break;
-
     case 2:
+      std::cout << "Enter Email: ";
+      std::getline(std::cin >> std::ws, email);
       system("clear");
-      std::cout << "+----------ENTER DETAILS---------+" << std::endl;
-      std::cout << "+                                +" << std::endl;
-      std::cout << "    First Name: ";
-      std::getline(std::cin >> std::ws, fname);
-      std::cout << "    Last Name: ";
-      std::getline(std::cin >> std::ws, lname);
-      std::cout << "    DOB (dd/mm/yy): ";
-      std::getline(std::cin >> std::ws, dob);
-      std::cout << "    SEX (M/F): ";
-      std::cin >> sex;
-      std::cout << "+                                +" << std::endl;
-      std::cout << "+--------------------------------+" << std::endl;
-      std::cout << refund(fname, lname, dob, sex) << std::endl;
-      break;
-    
-    case 3:
-      break;
+      result = verification(email);
+      if(result == 0)
+      {
+        std::cout << "Ticket is valid!" << std::endl;
+        break;
+      }
+      else 
+      {
+        std::cout << "Ticket is invalid!" << std::endl;
+      }
   }
-
-  std::cout << "Logging off...." << std::endl;
-
-  return 0;
 }

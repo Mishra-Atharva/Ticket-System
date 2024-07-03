@@ -17,19 +17,41 @@ int genTicket()
     }
   }
   std::ofstream file("tickets.txt", std::ios_base::app);
-  file << ticket_number;
+  file << ticket_number << std::endl;
   file.close();
   return ticket_number;
 }
 
+int getEmail(std::string& email)
+{
+  std::string info;
+  std::ifstream Myfile("customer.txt");
+  if(Myfile)
+  {
+    while(std::getline(Myfile, info))
+    {
+      if (info == email)
+      {
+        return 1;
+      }
+    }
+  }
+  return 0;
+}
+
 int purchase(std::string& email)
 {
-  int ticket_number = genTicket();
-  std::ofstream Myfile("customer.txt", std::ios_base::app);
-  Myfile << ticket_number << std::endl;
-  Myfile << email << std::endl;
-  Myfile.close();
-  return 0;
+  bool used = getEmail(email);
+  if(!used)
+  {
+    int ticket_number = genTicket();
+    std::ofstream Myfile("customer.txt", std::ios_base::app);
+    Myfile << ticket_number << std::endl;
+    Myfile << email << std::endl;
+    Myfile.close();
+    return 0;
+  }
+  return 1;
 }
 
 int verification(int& ticket)
@@ -76,7 +98,7 @@ int main()
       }
       else 
       {
-        std::cout << "[!] Error..!" << std::endl;
+        std::cout << "[!] Error Email already used!" << std::endl;
       }
       break;
     case 2:

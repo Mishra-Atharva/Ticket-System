@@ -59,16 +59,24 @@ int verification(int& ticket)
   std::string ticket_number = std::to_string(ticket);
   std::string info;
   std::ifstream Myfile("customer.txt");
-  while(std::getline(Myfile, info))
+  if(Myfile)
   {
-    if(info == ticket_number)
+    while(std::getline(Myfile, info))
     {
-      std::getline(Myfile, info);
-      std::cout << "Email: " << info << "\nTicket #: " << ticket << std::endl;
-      Myfile.close();
-      return 0;
+      if(info == ticket_number)
+      {
+        std::getline(Myfile, info);
+        std::cout << "Email: " << info << "\nTicket #: " << ticket << std::endl;
+        std::ofstream file("Checked.txt", std::ios_base::app);
+        file << ticket << std::endl;
+        file << info << std::endl;
+        file.close();
+        Myfile.close();
+        return 0;
+      }
     }
   }
+
   Myfile.close();
   return 1;
 }

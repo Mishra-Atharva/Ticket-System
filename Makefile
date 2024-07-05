@@ -1,13 +1,13 @@
-CXXFLAGS := -std=c++20
-SRC      := main.cpp
-EXE      := ticket_system
+CXXFLAGS := -std=c++20 
+SOURCE   := main.cpp
+EXE      := program
+
+.PHONY: build clean
 
 build:
-	$(CXX) $(CXXFLAGS) $(SRC) -o $(EXE)
+	$(CXX) $(CXXFLAGS) $(SOURCE) -lsqlite3 -o $(EXE)
 
 clean:
-	rm -f $(EXE) 
-	rm -f customer.txt
-	rm -f tickets.txt
-	rm -f Checked.txt
-
+	rm -f $(EXE)
+	rm -f *.txt
+	rm -f *.db
